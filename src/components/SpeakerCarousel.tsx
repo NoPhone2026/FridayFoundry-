@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { useRef, useState } from "react";
+import { motion } from "motion/react";
 import Image from "next/image";
 import type { Speaker } from "@/lib/content";
 
-const T = { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const };
-
-// width states (literals so Tailwind picks them up)
-const SMALL_W = "w-[clamp(240px,22vw,300px)]";
-const BIG_W = "w-[clamp(300px,27vw,390px)]";
-const HOVER_W = "group-hover:w-[clamp(300px,27vw,390px)]";
+// width states (literals so Tailwind picks them up); aspect-[4/5] makes the
+// height follow, so the card grows in BOTH dimensions
+const SMALL_W = "w-[clamp(264px,24vw,330px)]";
+const BIG_W = "w-[clamp(320px,29vw,406px)]";
+const PANEL_W = "w-[clamp(300px,30vw,415px)]";
+const EASE = "ease-[cubic-bezier(0.22,1,0.36,1)]";
 
 export default function SpeakerCarousel({
   speakers,
@@ -20,36 +20,66 @@ export default function SpeakerCarousel({
   variant?: "light" | "dark";
 }) {
   const [open, setOpen] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
+  const liRefs = useRef<Array<HTMLLIElement | null>>([]);
+  const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tag =
     variant === "dark" ? "bg-ff-ink text-ff-gray-2" : "bg-ff-gray-2 text-ff-ink";
 
+  const toggle = (i: number) => {
+    const willOpen = open !== i;
+    setOpen(willOpen ? i : null);
+    if (!willOpen) return;
+    const el = liRefs.current[i];
+    if (!el) return;
+    // nudge into view immediately, then again once the panel is full width
+    requestAnimationFrame(() =>
+      el.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" }),
+    );
+    if (scrollTimer.current) clearTimeout(scrollTimer.current);
+    scrollTimer.current = setTimeout(
+      () =>
+        el.scrollIntoView({ inline: "nearest", block: "nearest", behavior: "smooth" }),
+      560,
+    );
+  };
+
   return (
     <div className="no-scrollbar mt-12 overflow-x-auto pb-2 pl-[var(--spacing-gutter)]">
-      <ul className="flex items-stretch gap-4 pr-[var(--spacing-gutter)]">
+      {/* min-h reserves the tall (popped) height; items-end -> cards rise from a baseline */}
+      <ul className="flex min-h-[clamp(400px,36vw,508px)] items-end gap-4 pr-[var(--spacing-gutter)]">
         {speakers.map((s, i) => {
           const expanded = open === i;
+          const enlarged = expanded || hovered === i;
           return (
             <li
               key={`${s.name}-${i}`}
-              className="group relative flex h-[clamp(360px,36vw,460px)] shrink-0 items-stretch"
+              ref={(el) => {
+                liRefs.current[i] = el;
+              }}
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered((h) => (h === i ? null : h))}
+              className={`relative flex shrink-0 items-stretch ${
+                enlarged ? "z-10" : ""
+              }`}
             >
-              {/* Portrait — whole card toggles the panel; grows on hover */}
+              {/* Portrait — whole card toggles; grows in width + height and pops up */}
               <button
                 type="button"
-                onClick={() => setOpen(expanded ? null : i)}
+                onClick={() => toggle(i)}
                 aria-expanded={expanded}
                 aria-label={
                   expanded ? `Close ${s.name} details` : `Open ${s.name} details`
                 }
-                className={`relative h-full shrink-0 cursor-pointer overflow-hidden text-left transition-[width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                  expanded ? BIG_W : `${SMALL_W} ${HOVER_W}`
-                }`}
+                className={`relative aspect-[4/5] shrink-0 cursor-pointer overflow-hidden text-left transition-[width,box-shadow] duration-500 ${EASE} ${
+                  enlarged ? BIG_W : SMALL_W
+                } ${hovered === i && !expanded ? "shadow-2xl shadow-black/25" : ""}`}
               >
                 <Image
                   src={s.image}
                   alt={s.name}
                   fill
-                  sizes="390px"
+                  sizes="406px"
                   className="object-cover"
                 />
                 <span
@@ -58,10 +88,10 @@ export default function SpeakerCarousel({
                   {s.name}
                 </span>
 
-                {/* + box — appears on hover, rotates to × when open */}
+                {/* + box — appears when enlarged, rotates to × when open */}
                 <span
                   className={`absolute bottom-0 right-0 grid h-11 w-11 place-items-center bg-ff-gray-2 text-ff-ink transition-opacity duration-200 ${
-                    expanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                    enlarged ? "opacity-100" : "opacity-0"
                   }`}
                 >
                   <motion.svg
@@ -81,44 +111,39 @@ export default function SpeakerCarousel({
                 </span>
               </button>
 
-              {/* Detail panel — reveals to the right */}
-              <AnimatePresence initial={false}>
-                {expanded && (
-                  <motion.div
-                    key="panel"
-                    initial={{ width: 0, opacity: 0 }}
-                    animate={{ width: "auto", opacity: 1 }}
-                    exit={{ width: 0, opacity: 0 }}
-                    transition={T}
-                    className="shrink-0 overflow-hidden"
-                  >
-                    <div className="flex h-full w-[clamp(300px,30vw,415px)] flex-col justify-between bg-ff-gray-2 p-8">
-                      <div>
-                        <h4 className="whitespace-pre-line text-2xl font-semibold leading-none text-ff-orange">
-                          {"About the\nspeaker & session"}
-                        </h4>
-                        <p className="mt-6 text-base leading-snug text-ff-ink">
-                          {s.bio}
-                        </p>
-                        <p className="mt-7 whitespace-pre-line text-base leading-relaxed text-ff-ink underline">
-                          {`${s.website}\n${s.handle}`}
-                        </p>
-                      </div>
-                      <div className="mt-6 flex justify-end">
-                        <div className="relative h-[110px] w-[185px] shrink-0 overflow-hidden">
-                          <Image
-                            src={s.detailImage}
-                            alt=""
-                            fill
-                            sizes="185px"
-                            className="object-cover"
-                          />
-                        </div>
-                      </div>
+              {/* Detail panel — pure CSS width transition; content is absolutely
+                  positioned so it fills the card height but never drives it */}
+              <div
+                aria-hidden={!expanded}
+                className={`relative overflow-hidden transition-[width] duration-500 ${EASE} ${
+                  expanded ? PANEL_W : "w-0"
+                }`}
+              >
+                <div
+                  className={`absolute inset-y-0 left-0 flex ${PANEL_W} flex-col justify-between bg-ff-gray-2 p-8`}
+                >
+                  <div>
+                    <h4 className="whitespace-pre-line text-2xl font-semibold leading-none text-ff-orange">
+                      {"About the\nspeaker & session"}
+                    </h4>
+                    <p className="mt-6 text-base leading-snug text-ff-ink">{s.bio}</p>
+                    <p className="mt-7 whitespace-pre-line text-base leading-relaxed text-ff-ink underline">
+                      {`${s.website}\n${s.handle}`}
+                    </p>
+                  </div>
+                  <div className="mt-6 flex justify-end">
+                    <div className="relative h-[110px] w-[185px] shrink-0 overflow-hidden">
+                      <Image
+                        src={s.detailImage}
+                        alt=""
+                        fill
+                        sizes="185px"
+                        className="object-cover"
+                      />
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  </div>
+                </div>
+              </div>
             </li>
           );
         })}
