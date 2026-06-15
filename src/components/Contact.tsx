@@ -24,7 +24,7 @@ export default function Contact() {
           <div className="grid grid-cols-2 gap-x-8 gap-y-10">
             {contact.columns.map((col) => (
               <div key={col.label}>
-                <p className="text-sm text-ff-muted">{col.label}</p>
+                <p className="text-sm text-ff-lavender">{col.label}</p>
                 <div className="mt-2 space-y-0.5 text-ff-ink">
                   {col.lines.map((line) => (
                     <p key={line}>{line}</p>

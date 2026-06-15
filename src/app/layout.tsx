@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { intro } from "@/lib/content";
 import "./globals.css";
 
 const grotesk = localFont({
@@ -11,8 +12,7 @@ const grotesk = localFont({
 
 export const metadata: Metadata = {
   title: "Friday Foundry",
-  description:
-    "Friday Foundry is a series of live, recurring events designed to bring together established creative professionals with students and people at the beginning of their careers.",
+  description: intro.body,
 };
 
 export default function RootLayout({

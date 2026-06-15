@@ -10,27 +10,33 @@ export default function EventBlock({
   variant?: "light" | "dark";
 }) {
   const isDark = variant === "dark";
+  const paras = event.description.split(/\n\s*\n/);
   return (
     <div>
       <Reveal className="shell">
         <div className="grid grid-cols-[1fr_auto] items-start gap-8">
           {/* Left: title, description, ticket — description sits tight under the title */}
           <div>
-            <h3
-              className={`text-[clamp(2.2rem,4vw,3.9rem)] font-medium leading-[0.85] ${
-                isDark ? "text-ff-gray-2" : "text-ff-orange"
-              }`}
-            >
+            <h3 className="text-[clamp(2.2rem,4vw,3.9rem)] font-medium leading-[0.85] text-ff-orange">
               {event.title}
             </h3>
 
-            <p
-              className={`mt-8 max-w-[1000px] text-[clamp(0.95rem,1.05vw,1.125rem)] leading-relaxed ${
+            <div
+              className={`mt-8 max-w-[1000px] space-y-4 text-[clamp(0.95rem,1.05vw,1.125rem)] leading-relaxed ${
                 isDark ? "text-ff-gray-2/75" : "text-ff-ink/75"
               }`}
             >
-              {event.description}
-            </p>
+              {paras.map((para, i) => (
+                <p
+                  key={i}
+                  className={
+                    paras.length > 1 && i === 0 ? "font-semibold" : undefined
+                  }
+                >
+                  {para}
+                </p>
+              ))}
+            </div>
 
             <a
               href={event.ticketUrl}

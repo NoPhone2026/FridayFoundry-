@@ -11,7 +11,7 @@ export const nav = {
 
 export const intro = {
   body:
-    "Friday Foundry is a series of live, recurring events designed to bring together established creative professionals with students and people at the beginning of their careers. Our goal is to build a direct, accessible bridge between the classroom and the industry, stripping away the intimidating corporate facades to create an open space for real networking, learning, and growth.",
+    "Friday Foundry brings emerging creatives and industry leaders together for open conversations. Topics are proposed by the next generation and explored in group sessions led by seasoned professionals. The twist? Every guest gets one hour of complete carte blanche.",
   image: "/images/intro.png",
 };
 
@@ -53,6 +53,12 @@ const speaker = (name: string, image: string): Speaker => ({
 const EVENT_DESCRIPTION =
   "Lorem ipsum dolor sit amet consectetur. Faucibus blandit pharetra nisi suspendisse tellus mauris. Adipiscing mauris quam enim lobortis. Scelerisque risus morbi nullam dictum ut faucibus sit a. Vulputate duis pellentesque at nisl. Lorem ipsum dolor sit amet consectetur. Faucibus blandit pharetra nisi suspendisse tellus mauris. Adipiscing mauris quam enim lobortis. Scelerisque risus morbi nullam dictum ut faucibus sit a. Vulputate duis pellentesque at nisl.";
 
+// Paragraphs separated by a blank line; rendered as separate <p> in EventBlock.
+const CANNES_DESCRIPTION =
+  "We bring together emerging creative talent and some of the industry's most experienced professionals for a morning of honest conversations, fresh perspectives, and meaningful connections.\n\n" +
+  "Unlike traditional talks or panel discussions, Friday Foundry is built around the questions, challenges, and ambitions of the next generation. We start by listening to emerging creatives and gathering insights on what they want to discuss, learn, and challenge. Based on those insights, we invite industry leaders and give them one simple brief: one hour and complete creative freedom to explore the topic in their own way.\n\n" +
+  "The result is a series of engaging, unfiltered sessions designed to spark dialogue, share real-world lessons, and create genuine exchange between those entering the industry and those helping shape its future.";
+
 const SPEAKERS: Speaker[] = [
   speaker("Bob Johnson", "/images/speaker-3.png"),
   speaker("Jane Doe", "/images/speaker-2.png"),
@@ -78,7 +84,7 @@ export const events: EventItem[] = [
     title: "Cannes Lions",
     dates: "24–26.06.2026",
     location: "Location",
-    description: EVENT_DESCRIPTION,
+    description: CANNES_DESCRIPTION,
     ticketUrl:
       "https://www.eventbrite.com/e/friday-foundry-i-cannes-lions-2026-edition-tickets-1988931451512",
     speakers: SPEAKERS,
@@ -119,9 +125,7 @@ export const contact = {
   body:
     "Friday Foundry is an open canvas. Whether you want to take the stage as a speaker, pitch a great idea for a collaboration, or just ask us a question—we want to hear from you.",
   columns: [
-    { label: "general inquiries", lines: ["hello@fridayfoundry.com", "+00 000 000 000"] },
-    { label: "address", lines: ["Streetname 00,", "Amsterdam"] },
-    { label: "collaborations", lines: ["collab@fridayfoundry.com", "+00 000 000 000"] },
+    { label: "general inquiries", lines: ["hello@fridayfoundry.com"] },
     { label: "Instagram", lines: ["@fridayfoundry"] },
   ],
 };
