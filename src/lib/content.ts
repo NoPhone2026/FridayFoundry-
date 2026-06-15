@@ -79,7 +79,8 @@ export const events: EventItem[] = [
     dates: "24–26.06.2026",
     location: "Location",
     description: EVENT_DESCRIPTION,
-    ticketUrl: "https://www.eventbrite.com",
+    ticketUrl:
+      "https://www.eventbrite.com/e/friday-foundry-i-cannes-lions-2026-edition-tickets-1988931451512",
     speakers: SPEAKERS,
   },
   {
@@ -88,7 +89,8 @@ export const events: EventItem[] = [
     dates: "24–26.06.2026",
     location: "Location",
     description: EVENT_DESCRIPTION,
-    ticketUrl: "https://www.eventbrite.com",
+    ticketUrl:
+      "https://www.eventbrite.com/e/friday-foundry-i-cannes-lions-2026-edition-tickets-1988931451512",
     speakers: SPEAKERS,
   },
 ];
