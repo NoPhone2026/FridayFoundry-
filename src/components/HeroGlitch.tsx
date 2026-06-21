@@ -90,17 +90,14 @@ export default function HeroGlitch() {
     let rows = 0;
 
     const mk = () => document.createElement("canvas");
-    const maskCloud = mk();
-    const maskCore = mk();
+    // Full-resolution mosaic mask (reused per layer) + the core's own layer.
+    const mask = mk();
     const layerCore = mk();
-    const mC = maskCloud.getContext("2d")!;
-    const mR = maskCore.getContext("2d")!;
+    const mCtx = mask.getContext("2d")!;
     const lR = layerCore.getContext("2d")!;
 
     let bufCloud = new Float32Array(0);
     let bufCore = new Float32Array(0);
-    let imgCloud: ImageData | null = null;
-    let imgCore: ImageData | null = null;
 
     const cloud = new Image();
     cloud.src = TEX_CLOUD;
@@ -116,16 +113,15 @@ export default function HeroGlitch() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       layerCore.width = Math.round(W * dpr);
       layerCore.height = Math.round(H * dpr);
+      // Mask is full-resolution so it composites 1:1 — no low-res upscale for
+      // WebKit/iOS to bilinear-smooth (which softened the mosaic on iPhones).
+      mask.width = Math.round(W * dpr);
+      mask.height = Math.round(H * dpr);
+      mCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
       cols = Math.max(1, Math.ceil(W / BLOCK));
       rows = Math.max(1, Math.ceil(H / BLOCK));
-      maskCloud.width = cols;
-      maskCloud.height = rows;
-      maskCore.width = cols;
-      maskCore.height = rows;
       bufCloud = new Float32Array(cols * rows);
       bufCore = new Float32Array(cols * rows);
-      imgCloud = mC.createImageData(cols, rows);
-      imgCore = mR.createImageData(cols, rows);
     };
     resize();
     const ro = new ResizeObserver(resize);
@@ -203,16 +199,25 @@ export default function HeroGlitch() {
       }
     };
 
-    const render = (
-      buf: Float32Array,
-      img: ImageData,
-      mctx: CanvasRenderingContext2D,
-    ) => {
-      const d = img.data;
-      for (let i = 0; i < buf.length; i++) {
-        d[i * 4 + 3] = buf[i] >= THRESH ? 255 : 0;
+    // Paint the on-cells of a cell buffer as crisp full-resolution white blocks
+    // (horizontal runs merged), so the mask never needs a smoothed upscale.
+    const paintMask = (buf: Float32Array) => {
+      mCtx.clearRect(0, 0, W, H);
+      mCtx.fillStyle = "#fff";
+      for (let y = 0; y < rows; y++) {
+        const base = y * cols;
+        let start = -1;
+        for (let x = 0; x < cols; x++) {
+          const on = buf[base + x] >= THRESH;
+          if (on && start < 0) start = x;
+          else if (!on && start >= 0) {
+            mCtx.fillRect(start * BLOCK, y * BLOCK, (x - start) * BLOCK, BLOCK);
+            start = -1;
+          }
+        }
+        if (start >= 0)
+          mCtx.fillRect(start * BLOCK, y * BLOCK, (cols - start) * BLOCK, BLOCK);
       }
-      mctx.putImageData(img, 0, 0);
     };
 
     const cover = (c: CanvasRenderingContext2D, img: HTMLImageElement) => {
@@ -258,28 +263,24 @@ export default function HeroGlitch() {
 
       ctx.clearRect(0, 0, W, H);
       const ready = cloud.complete && core.complete && cloud.naturalWidth;
-      if (ready && imgCloud && imgCore) {
-        render(bufCloud, imgCloud, mC);
-        render(bufCore, imgCore, mR);
-
-        // checkerboard cloud
+      if (ready) {
+        // checkerboard cloud, clipped by a full-res mask (1:1 draw -> crisp)
         ctx.globalCompositeOperation = "source-over";
         cover(ctx, cloud);
+        paintMask(bufCloud);
         ctx.globalCompositeOperation = "destination-in";
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(maskCloud, 0, 0, cols, rows, 0, 0, W, H);
+        ctx.drawImage(mask, 0, 0, W, H);
 
         // colorful core on its own layer, then composited on top
         lR.setTransform(dpr, 0, 0, dpr, 0, 0);
         lR.globalCompositeOperation = "source-over";
         lR.clearRect(0, 0, W, H);
         cover(lR, core);
+        paintMask(bufCore);
         lR.globalCompositeOperation = "destination-in";
-        lR.imageSmoothingEnabled = false;
-        lR.drawImage(maskCore, 0, 0, cols, rows, 0, 0, W, H);
+        lR.drawImage(mask, 0, 0, W, H);
 
         ctx.globalCompositeOperation = "source-over";
-        ctx.imageSmoothingEnabled = true;
         ctx.drawImage(layerCore, 0, 0, W, H);
       }
       raf = visible && !document.hidden ? requestAnimationFrame(frame) : 0;
