@@ -28,6 +28,8 @@ const CORE = { R: 16, solid: 0.95, edge: 1.25, ns: 2.6, thr: 0.5, decay: 0.026, 
 const SPEED_REF = 1.0; // cells/frame -> full-size reveal (normal movement)
 const SF_MIN = 0.8; // smallest reveal scale while moving (keeps size consistent)
 const MOVE_EPS = 0.08; // below this smoothed speed, treat the cursor as stopped
+const AMBIENT_SPEED = 0.013; // auto-drift path speed on touch devices (calmer than cursor)
+const AMBIENT_SF = 0.72; // reveal size for the ambient (touch) animation
 const FLOOR = 0.004;
 const THRESH = 0.5;
 
@@ -64,8 +66,12 @@ export default function HeroGlitch() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
-    if (!fine.matches) return;
+    // Respect reduced-motion -> static wordmark.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Touch devices have no cursor -> drive the reveal on an auto path instead.
+    const ambient = !window.matchMedia(
+      "(hover: hover) and (pointer: fine)",
+    ).matches;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -215,11 +221,26 @@ export default function HeroGlitch() {
     const frame = () => {
       t += 1;
 
+      // touch: drive a wandering cursor along a Lissajous path
+      if (ambient) {
+        const at = t * AMBIENT_SPEED;
+        cx = (W * (0.5 + 0.33 * Math.sin(at))) / BLOCK;
+        cy = (H * (0.5 + 0.3 * Math.sin(at * 1.37 + 1.1))) / BLOCK;
+        inside = true;
+        if (!primed) {
+          px = cx;
+          py = cy;
+          primed = true;
+        }
+      }
+
       // smoothed cursor speed (cells/frame)
       const inst = primed ? Math.hypot(cx - px, cy - py) : 0;
       speed = speed * 0.7 + inst * 0.3;
-      const moving = inside && speed > MOVE_EPS;
-      const sf = Math.max(SF_MIN, Math.min(1, speed / SPEED_REF));
+      const moving = ambient || (inside && speed > MOVE_EPS);
+      const sf = ambient
+        ? AMBIENT_SF
+        : Math.max(SF_MIN, Math.min(1, speed / SPEED_REF));
 
       decay(bufCloud, CLOUD.decay);
       decay(bufCore, CORE.decay);
@@ -256,19 +277,30 @@ export default function HeroGlitch() {
         ctx.imageSmoothingEnabled = true;
         ctx.drawImage(layerCore, 0, 0, W, H);
       }
-      raf = requestAnimationFrame(frame);
+      raf = visible && !document.hidden ? requestAnimationFrame(frame) : 0;
     };
-    raf = requestAnimationFrame(frame);
 
-    const onVisibility = () => {
-      cancelAnimationFrame(raf);
-      if (!document.hidden) raf = requestAnimationFrame(frame);
+    let visible = true;
+    const resume = () => {
+      if (!raf && visible && !document.hidden) raf = requestAnimationFrame(frame);
     };
+    // pause the loop when the hero scrolls off-screen (battery, esp. ambient)
+    const vis = new IntersectionObserver(
+      ([e]) => {
+        visible = e.isIntersecting;
+        resume();
+      },
+      { threshold: 0 },
+    );
+    vis.observe(canvas);
+    const onVisibility = () => resume();
     document.addEventListener("visibilitychange", onVisibility);
+    raf = requestAnimationFrame(frame);
 
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      vis.disconnect();
       window.removeEventListener("pointermove", onMove);
       document.removeEventListener("pointerleave", onLeave);
       document.removeEventListener("visibilitychange", onVisibility);

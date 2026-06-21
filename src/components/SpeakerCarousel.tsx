@@ -13,28 +13,31 @@ const PANEL_W = "w-[clamp(300px,30vw,415px)]";
 const EASE = "ease-[cubic-bezier(0.22,1,0.36,1)]";
 
 // Per-speaker face layout — name + title positioned to match each card design.
-// The card is a @container, so cqw font sizes scale the text with the card.
+// Geometry lifted from Figma (card ~367×458): all labels are dark ink text on a
+// subtle gray-2 box. The card is a @container, so cqw font sizes + em padding
+// scale everything with the card. Names ≈ 12.15cqw, titles ≈ 4.25cqw.
+const NAME =
+  "absolute whitespace-nowrap bg-ff-gray-2 px-[0.35em] py-[0.18em] text-[12.15cqw] font-medium leading-none text-ff-ink";
+const TITLE =
+  "absolute bg-ff-gray-2 px-[0.55em] py-[0.3em] text-[4.25cqw] font-medium leading-[1.12] text-ff-ink";
+
 const FACE: Record<string, { name: string; title: string }> = {
   odile: {
-    title:
-      "absolute left-[6%] top-[7%] max-w-[58%] bg-ff-orange px-[3%] py-[1.5%] text-[3.4cqw] font-medium leading-tight text-ff-gray-2",
-    name: "absolute bottom-[7%] left-[6%] bg-ff-ink px-[4%] py-[1.5%] text-[7.5cqw] font-medium leading-none text-ff-gray-2",
+    title: `${TITLE} left-[22.1%] top-[17.7%] max-w-[40%]`,
+    name: `${NAME} bottom-[10.9%] left-[16.6%]`,
   },
   jolyon: {
-    name: "absolute inset-x-[6%] top-[4%] text-[10cqw] font-medium leading-none text-ff-ink",
-    title:
-      "absolute bottom-[8%] left-1/2 w-[72%] -translate-x-1/2 bg-ff-ink px-[4%] py-[2.5%] text-[3.6cqw] font-medium leading-tight text-ff-gray-2",
+    name: `${NAME} top-[8.7%] left-[13.9%]`,
+    title: `${TITLE} bottom-[11.1%] left-[49.9%] max-w-[45%]`,
   },
   farah: {
-    name: "absolute inset-x-[6%] top-[15%] text-[9.5cqw] font-medium leading-none text-ff-ink",
-    title:
-      "absolute right-[6%] top-[31%] whitespace-pre-line text-right text-[3.6cqw] font-medium leading-tight text-ff-ink",
+    name: `${NAME} top-[17.7%] left-[5.4%]`,
+    title: `${TITLE} top-[31.2%] left-[33.2%] whitespace-pre-line`,
   },
 };
 const DEFAULT_FACE = {
-  name: "absolute inset-x-[6%] top-[5%] text-[9cqw] font-medium leading-none text-ff-ink",
-  title:
-    "absolute bottom-[7%] left-[6%] bg-ff-ink px-[4%] py-[2%] text-[3.6cqw] font-medium leading-tight text-ff-gray-2",
+  name: `${NAME} bottom-[8%] left-[6%]`,
+  title: `${TITLE} left-[6%] top-[7%] max-w-[55%]`,
 };
 
 export default function SpeakerCarousel({
