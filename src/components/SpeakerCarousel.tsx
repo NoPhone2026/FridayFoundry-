@@ -1,15 +1,13 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion } from "motion/react";
 import Image from "next/image";
 import type { Speaker } from "@/lib/content";
 
-// width states (literals so Tailwind picks them up); aspect-[4/5] makes the
-// height follow, so the card grows in BOTH dimensions
-const SMALL_W = "w-[clamp(264px,24vw,330px)]";
-const BIG_W = "w-[clamp(320px,29vw,406px)]";
-const PANEL_W = "w-[clamp(300px,30vw,415px)]";
+// One fixed card size (no hover-grow). Full-width when stacked on mobile,
+// a fixed reading width in the desktop scroller — big enough for the flipped
+// bio either way. aspect-[4/5] drives the height.
+const CARD_W = "w-full md:w-[clamp(344px,27vw,410px)]";
 const EASE = "ease-[cubic-bezier(0.22,1,0.36,1)]";
 
 // Per-speaker face layout — name + title positioned to match each card design.
@@ -48,9 +46,7 @@ export default function SpeakerCarousel({
   variant?: "light" | "dark";
 }) {
   const [open, setOpen] = useState<number | null>(null);
-  const [hovered, setHovered] = useState<number | null>(null);
   const liRefs = useRef<Array<HTMLLIElement | null>>([]);
-  const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cardBg = variant === "dark" ? "bg-ff-ink" : "bg-ff-gray";
 
   const toggle = (i: number) => {
@@ -58,119 +54,133 @@ export default function SpeakerCarousel({
     setOpen(willOpen ? i : null);
     if (!willOpen) return;
     const el = liRefs.current[i];
-    if (!el) return;
-    // nudge into view immediately, then again once the panel is full width
     requestAnimationFrame(() =>
-      el.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" }),
-    );
-    if (scrollTimer.current) clearTimeout(scrollTimer.current);
-    scrollTimer.current = setTimeout(
-      () =>
-        el.scrollIntoView({ inline: "nearest", block: "nearest", behavior: "smooth" }),
-      560,
+      el?.scrollIntoView({ inline: "center", block: "center", behavior: "smooth" }),
     );
   };
 
   return (
-    <div className="no-scrollbar mt-12 overflow-x-auto pb-2 pl-[var(--spacing-gutter)]">
-      {/* min-h reserves the tall (popped) height; items-end -> cards rise from a baseline */}
-      <ul className="flex min-h-[clamp(400px,36vw,508px)] items-end gap-4 pr-[var(--spacing-gutter)]">
+    <div className="mt-12">
+      {/* Stacked on mobile; a horizontal scroller on md+. The -my/py pair gives
+          the 3D flip vertical room inside the (otherwise clipping) scroller. */}
+      <ul className="no-scrollbar flex flex-col gap-6 px-[var(--spacing-gutter)] md:-my-10 md:flex-row md:items-center md:gap-5 md:overflow-x-auto md:py-10">
         {speakers.map((s, i) => {
-          const expanded = open === i;
-          const enlarged = expanded || hovered === i;
+          const flipped = open === i;
           const face = FACE[s.slug] ?? DEFAULT_FACE;
+          const hasLinks = Boolean(s.website || s.handle);
           return (
             <li
               key={`${s.name}-${i}`}
               ref={(el) => {
                 liRefs.current[i] = el;
               }}
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered((h) => (h === i ? null : h))}
-              className={`relative flex shrink-0 items-stretch ${
-                enlarged ? "z-10" : ""
+              className={`group relative ${CARD_W} [perspective:2400px] md:shrink-0 ${
+                flipped ? "z-10" : ""
               }`}
             >
-              {/* Portrait — whole card toggles; grows in width + height and pops up */}
-              <button
-                type="button"
-                onClick={() => toggle(i)}
-                aria-expanded={expanded}
-                aria-label={
-                  expanded ? `Close ${s.name} details` : `Open ${s.name} details`
-                }
-                className={`@container relative aspect-[4/5] shrink-0 cursor-pointer overflow-hidden text-left transition-[width,box-shadow] duration-500 ${EASE} ${cardBg} ${
-                  enlarged ? BIG_W : SMALL_W
-                } ${hovered === i && !expanded ? "shadow-2xl shadow-black/25" : ""}`}
-              >
-                <Image
-                  src={s.image}
-                  alt=""
-                  fill
-                  sizes="406px"
-                  className="object-cover"
-                />
-                <span className={`pointer-events-none ${face.title}`}>
-                  {s.title}
-                </span>
-                <span className={`pointer-events-none ${face.name}`}>
-                  {s.name}
-                </span>
-
-                {/* + box — appears when enlarged, rotates to × when open */}
-                <span
-                  className={`absolute bottom-0 right-0 grid h-11 w-11 place-items-center bg-ff-gray-2 text-ff-ink transition-opacity duration-200 ${
-                    enlarged ? "opacity-100" : "opacity-0"
-                  }`}
-                >
-                  <motion.svg
-                    viewBox="0 0 24 24"
-                    className="h-4 w-4"
-                    animate={{ rotate: expanded ? 45 : 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                    aria-hidden
-                  >
-                    <path
-                      d="M12 5v14M5 12h14"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    />
-                  </motion.svg>
-                </span>
-              </button>
-
-              {/* Detail panel — pure CSS width transition; content is absolutely
-                  positioned so it fills the card height but never drives it */}
+              {/* Flipping card — same box front & back, rotates in place */}
               <div
-                aria-hidden={!expanded}
-                className={`relative overflow-hidden transition-[width] duration-500 ${EASE} ${
-                  expanded ? PANEL_W : "w-0"
-                }`}
+                className={`@container relative aspect-[4/5] w-full transition-transform duration-[600ms] [transform-style:preserve-3d] ${EASE}`}
+                style={{
+                  transform: flipped ? "rotateY(180deg)" : undefined,
+                  WebkitTransformStyle: "preserve-3d",
+                }}
               >
-                <div
-                  className={`absolute inset-y-0 left-0 flex ${PANEL_W} flex-col justify-between bg-ff-gray-2 p-8`}
+                {/* FRONT — collage + labels; whole face opens */}
+                <button
+                  type="button"
+                  onClick={() => toggle(i)}
+                  aria-expanded={flipped}
+                  aria-hidden={flipped}
+                  aria-label={`Open ${s.name} details`}
+                  tabIndex={flipped ? -1 : 0}
+                  style={{ pointerEvents: flipped ? "none" : "auto" }}
+                  className={`absolute inset-0 cursor-pointer overflow-hidden text-left shadow-sm shadow-black/5 transition-shadow [backface-visibility:hidden] [-webkit-backface-visibility:hidden] group-hover:shadow-xl group-hover:shadow-black/15 ${cardBg}`}
                 >
-                  <div>
-                    <h4 className="whitespace-pre-line text-2xl font-semibold leading-none text-ff-orange">
-                      {"About the\nspeaker & session"}
-                    </h4>
-                    <p className="mt-6 text-base leading-snug text-ff-ink">{s.bio}</p>
-                    <p className="mt-7 whitespace-pre-line text-base leading-relaxed text-ff-ink underline">
-                      {`${s.website}\n${s.handle}`}
-                    </p>
-                  </div>
-                  <div className="mt-6 flex justify-end">
-                    <div className="relative h-[110px] w-[185px] shrink-0 overflow-hidden">
-                      <Image
-                        src={s.detailImage}
-                        alt=""
-                        fill
-                        sizes="185px"
-                        className="object-cover"
+                  <Image src={s.image} alt="" fill sizes="420px" className="object-cover" />
+                  <span className={`pointer-events-none ${face.title}`}>{s.title}</span>
+                  <span className={`pointer-events-none ${face.name}`}>{s.name}</span>
+
+                  {/* + cue — bottom-right. Always shown on touch; hover-only on desktop */}
+                  <span
+                    className={`absolute bottom-0 right-0 grid h-11 w-11 place-items-center bg-ff-gray-2 text-ff-ink transition-opacity duration-200 ${
+                      flipped
+                        ? "opacity-0"
+                        : "[@media(hover:none)]:opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
+                    }`}
+                  >
+                    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
+                      <path
+                        d="M12 5v14M5 12h14"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
                       />
+                    </svg>
+                  </span>
+                </button>
+
+                {/* BACK — "About the speaker & session" (gray-2 text panel) */}
+                <div
+                  aria-hidden={!flipped}
+                  style={{ pointerEvents: flipped ? "auto" : "none" }}
+                  className="absolute inset-0 overflow-hidden bg-ff-gray-2 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)]"
+                >
+                  <div className="flex h-full flex-col justify-between p-[6.8cqw]">
+                    <div className="flex flex-col gap-[5.6cqw]">
+                      <h4 className="whitespace-pre-line text-[6.43cqw] font-semibold leading-none text-ff-orange">
+                        {"About the\nspeaker & session"}
+                      </h4>
+                      <p className="whitespace-pre-line text-[3.95cqw] leading-[1.33] text-ff-ink">
+                        {s.bio}
+                      </p>
                     </div>
+                    {hasLinks && (
+                      <div className="flex flex-col gap-[1.1cqw] text-[3.95cqw] leading-[1.33] text-ff-ink">
+                        {s.website && (
+                          <a
+                            href={`https://${s.website.replace(/^https?:\/\//, "")}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-fit underline underline-offset-2"
+                          >
+                            {s.website}
+                          </a>
+                        )}
+                        {s.handle &&
+                          (s.instagram ? (
+                            <a
+                              href={s.instagram}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="w-fit underline underline-offset-2"
+                            >
+                              {s.handle}
+                            </a>
+                          ) : (
+                            <span className="w-fit underline underline-offset-2">{s.handle}</span>
+                          ))}
+                      </div>
+                    )}
                   </div>
+
+                  {/* close × */}
+                  <button
+                    type="button"
+                    onClick={() => toggle(i)}
+                    aria-label={`Close ${s.name} details`}
+                    tabIndex={flipped ? 0 : -1}
+                    className="absolute right-0 top-0 grid h-11 w-11 place-items-center text-ff-ink/60 transition-colors hover:text-ff-ink"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
+                      <path
+                        d="M6 6l12 12M18 6L6 18"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </li>

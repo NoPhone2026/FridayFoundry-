@@ -66,25 +66,28 @@ export type Speaker = {
   name: string;
   title: string;
   image: string; // collage (photo + glitch on transparent bg)
-  // detail panel — placeholder until the real per-speaker expand designs land
+  // card back ("About the speaker & session")
   bio: string;
-  website: string;
-  handle: string;
-  detailImage: string;
+  website?: string;
+  handle?: string;
+  instagram?: string; // profile URL for the handle
 };
 
-const SPEAKER_BIO =
-  "John Doe is a multidisciplinary art director who will be stripping away the polished award reels to share the unvarnished reality of her career path. In this session, she’ll break down her biggest creative setbacks, how she navigated early-career mistakes, and the exact practical building blocks she used to launch her own independent studio.";
-
-const speaker = (slug: string, name: string, title: string): Speaker => ({
+const speaker = (
+  slug: string,
+  name: string,
+  title: string,
+  bio: string,
+  links?: { website: string; handle: string; instagram: string },
+): Speaker => ({
   slug,
   name,
   title,
   image: `/images/speakers/${slug}.webp`,
-  bio: SPEAKER_BIO,
-  website: "www.johndoe.com",
-  handle: "@johndoe",
-  detailImage: "/images/speaker-4.png",
+  bio,
+  website: links?.website,
+  handle: links?.handle,
+  instagram: links?.instagram,
 });
 
 const EVENT_DESCRIPTION =
@@ -97,12 +100,33 @@ const CANNES_DESCRIPTION =
   "The result is a series of engaging, unfiltered sessions designed to spark dialogue, share real-world lessons, and create genuine exchange between those entering the industry and those helping shape its future.";
 
 const SPEAKERS: Speaker[] = [
-  speaker("odile", "Odile Breffa", "Strategy Lead at INNOCEAN Berlin"),
-  speaker("jolyon", "Jolyon White", "Founder and CCO at 10Days London"),
+  speaker(
+    "odile",
+    "Odile Breffa",
+    "Strategy Lead at INNOCEAN Berlin",
+    "Odile Breffa is Strategy Lead at INNOCEAN Berlin, combining cultural insight and creativity to drive impactful brand strategies. With a background in sociology, ethnography, PR, and artist management, she brings a distinctly human perspective to innovation.\n\nShe has served as a juror for Cannes Lions and Effie Europe, and as President of the D&AD Orbit Extra Jury. Her award-winning work includes the Grand Prix-winning The First Speech campaign for Reporters Without Borders and the acclaimed Vulva Spaceship campaign, both recognized internationally for their cultural relevance and creative impact.",
+    {
+      website: "innoceanberlin.com",
+      handle: "@innocean_berlin",
+      instagram: "https://www.instagram.com/innocean_berlin",
+    },
+  ),
+  speaker(
+    "jolyon",
+    "Jolyon White",
+    "Founder and CCO at 10Days London",
+    "Jolyon White is Founder and Chief Creative Officer of 10 Days, one of London's most talked-about independent creative agencies.\n\nPreviously at Wieden+Kennedy, Mother, and Channel 4, he has created memorable award-winning work for brands including Nike, Lurpak, MoneySupermarket, and the Paralympics. Known for challenging industry conventions and championing bold ideas over process, Jolyon brings a unique perspective on creativity, advertising, and the future of the agency model. He is also an award-winning film director.",
+    {
+      website: "www.10days.london",
+      handle: "@10days.london",
+      instagram: "https://www.instagram.com/10days.london/",
+    },
+  ),
   speaker(
     "farah",
     "Farah El Feghali",
     "Executive Creative Director\nMcCann Paris + La Roche-Posay",
+    "ECD @ McCann Paris, with 14+ years in 35 markets. Trilingual. 2× Cannes GP, creator of #Optink. Miami Ad School + American University of Beirut. Previously @ R/GA New York, BBDO Berlin, Ogilvy Tokyo & BBDO Beirut.",
   ),
 ];
 

@@ -68,10 +68,12 @@ export default function HeroGlitch() {
   useEffect(() => {
     // Respect reduced-motion -> static wordmark.
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    // Touch devices have no cursor -> drive the reveal on an auto path instead.
-    const ambient = !window.matchMedia(
-      "(hover: hover) and (pointer: fine)",
-    ).matches;
+    // Anything with a real cursor (desktop/laptop mouse or trackpad) follows the
+    // pointer. `any-pointer: fine` is true whenever *some* fine pointer exists, so
+    // it stays cursor-driven even on hybrids that misreport the primary pointer as
+    // coarse — only touch-only devices (tablet and smaller) get the auto reveal.
+    const cursorCapable = window.matchMedia?.("(any-pointer: fine)").matches ?? true;
+    const ambient = !cursorCapable;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
