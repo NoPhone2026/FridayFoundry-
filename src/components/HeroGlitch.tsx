@@ -80,7 +80,10 @@ export default function HeroGlitch() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // Cap at 3 so 3× phones render the canvas at full resolution (a 2× cap let
+    // the browser upscale 2→3 and softened the mosaic). The noise sim runs on a
+    // low-res grid independent of dpr, so only compositing scales — cheap.
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
     let W = 0;
     let H = 0;
     let cols = 0;
