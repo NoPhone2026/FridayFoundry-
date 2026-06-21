@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { intro, founders } from "@/lib/content";
+import FounderMedia from "./FounderMedia";
 import Reveal from "./Reveal";
 
 export default function About() {
@@ -37,12 +38,9 @@ export default function About() {
                 <p className="mt-1 text-sm italic opacity-90">{f.title}</p>
               </div>
               <div className="relative aspect-[3/5] w-full overflow-hidden">
-                <Image
-                  src={f.image}
-                  alt={f.name}
-                  fill
+                <FounderMedia
+                  founder={f}
                   sizes="(max-width: 768px) 50vw, 25vw"
-                  className="object-cover"
                 />
               </div>
             </Reveal>

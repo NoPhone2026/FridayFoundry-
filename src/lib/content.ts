@@ -15,23 +15,58 @@ export const intro = {
   image: "/images/intro.png",
 };
 
+export type FounderVideo = { webm: string; mp4: string; poster: string };
+
 export type Founder = {
   name: string;
   title: string;
   role: "Founder" | "Board member";
-  image: string;
+  image: string; // static fallback (placeholder, or the video's poster)
+  video?: FounderVideo;
 };
 
+const founderVideo = (slug: string): FounderVideo => ({
+  webm: `/videos/${slug}.webm`,
+  mp4: `/videos/${slug}.mp4`,
+  poster: `/images/founder-${slug}.jpg`,
+});
+
 export const founders: Founder[] = [
-  { name: "Ingmar Larsen", title: "Founder, ThisAgency", role: "Founder", image: "/images/founder-a.png" },
-  { name: "Marlon Koster", title: "Creative Director, Fitzroy", role: "Founder", image: "/images/founder-b.png" },
-  { name: "Henrique Louzada", title: "Creative Director, WINK", role: "Board member", image: "/images/founder-a.png" },
-  { name: "Jonathan van Loon", title: "Senior Art Director, APS", role: "Board member", image: "/images/founder-a.png" },
+  {
+    name: "Ingmar Larsen",
+    title: "Founder, ThisAgency",
+    role: "Founder",
+    image: "/images/founder-ingmar.jpg",
+    video: founderVideo("ingmar"),
+  },
+  {
+    name: "Marlon Koster",
+    title: "Creative Director, Fitzroy",
+    role: "Founder",
+    image: "/images/founder-marlon.jpg",
+    video: founderVideo("marlon"),
+  },
+  {
+    name: "Henrique Louzada",
+    title: "Creative Director, WINK",
+    role: "Board member",
+    image: "/images/founder-a.png",
+  },
+  {
+    name: "Jonathan van Loon",
+    title: "Senior Art Director, APS",
+    role: "Board member",
+    image: "/images/founder-jonathan.jpg",
+    video: founderVideo("jonathan"),
+  },
 ];
 
 export type Speaker = {
+  slug: string;
   name: string;
-  image: string;
+  title: string;
+  image: string; // collage (photo + glitch on transparent bg)
+  // detail panel — placeholder until the real per-speaker expand designs land
   bio: string;
   website: string;
   handle: string;
@@ -41,9 +76,11 @@ export type Speaker = {
 const SPEAKER_BIO =
   "John Doe is a multidisciplinary art director who will be stripping away the polished award reels to share the unvarnished reality of her career path. In this session, she’ll break down her biggest creative setbacks, how she navigated early-career mistakes, and the exact practical building blocks she used to launch her own independent studio.";
 
-const speaker = (name: string, image: string): Speaker => ({
+const speaker = (slug: string, name: string, title: string): Speaker => ({
+  slug,
   name,
-  image,
+  title,
+  image: `/images/speakers/${slug}.webp`,
   bio: SPEAKER_BIO,
   website: "www.johndoe.com",
   handle: "@johndoe",
@@ -60,12 +97,13 @@ const CANNES_DESCRIPTION =
   "The result is a series of engaging, unfiltered sessions designed to spark dialogue, share real-world lessons, and create genuine exchange between those entering the industry and those helping shape its future.";
 
 const SPEAKERS: Speaker[] = [
-  speaker("Bob Johnson", "/images/speaker-3.png"),
-  speaker("Jane Doe", "/images/speaker-2.png"),
-  speaker("John Doe", "/images/speaker-1.png"),
-  speaker("Bob Johnson", "/images/speaker-4.png"),
-  speaker("Bob Johnson", "/images/speaker-3.png"),
-  speaker("Jane Doe", "/images/speaker-2.png"),
+  speaker("odile", "Odile Breffa", "Strategy Lead at INNOCEAN Berlin"),
+  speaker("jolyon", "Jolyon White", "Founder and CCO at 10Days London"),
+  speaker(
+    "farah",
+    "Farah El Feghali",
+    "Executive Creative Director\nMcCann Paris + La Roche-Posay",
+  ),
 ];
 
 export type EventItem = {
@@ -104,11 +142,7 @@ export const events: EventItem[] = [
 export type PreviousEvent = { title: string; date: string };
 
 export const previousEvents: PreviousEvent[] = [
-  { title: "Cannes Lions edition", date: "07.04.2026" },
   { title: "1st edition @cake", date: "07.04.2026" },
-  { title: "Lorem ipsum", date: "07.04.2026" },
-  { title: "Dolor whatever", date: "07.04.2026" },
-  { title: "Idk edition @rotterdam", date: "07.04.2026" },
 ];
 
 export const newsletter = {
@@ -125,7 +159,20 @@ export const contact = {
   body:
     "Friday Foundry is an open canvas. Whether you want to take the stage as a speaker, pitch a great idea for a collaboration, or just ask us a question—we want to hear from you.",
   columns: [
-    { label: "general inquiries", lines: ["hello@fridayfoundry.com"] },
-    { label: "Instagram", lines: ["@fridayfoundry"] },
+    {
+      label: "general inquiries",
+      lines: [
+        { text: "hello@friday-foundry.com", href: "mailto:hello@friday-foundry.com" },
+      ],
+    },
+    {
+      label: "Instagram",
+      lines: [
+        {
+          text: "@friday_foundry",
+          href: "https://www.instagram.com/friday_foundry/",
+        },
+      ],
+    },
   ],
 };

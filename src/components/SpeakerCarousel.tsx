@@ -12,6 +12,31 @@ const BIG_W = "w-[clamp(320px,29vw,406px)]";
 const PANEL_W = "w-[clamp(300px,30vw,415px)]";
 const EASE = "ease-[cubic-bezier(0.22,1,0.36,1)]";
 
+// Per-speaker face layout — name + title positioned to match each card design.
+// The card is a @container, so cqw font sizes scale the text with the card.
+const FACE: Record<string, { name: string; title: string }> = {
+  odile: {
+    title:
+      "absolute left-[6%] top-[7%] max-w-[58%] bg-ff-orange px-[3%] py-[1.5%] text-[3.4cqw] font-medium leading-tight text-ff-gray-2",
+    name: "absolute bottom-[7%] left-[6%] bg-ff-ink px-[4%] py-[1.5%] text-[7.5cqw] font-medium leading-none text-ff-gray-2",
+  },
+  jolyon: {
+    name: "absolute inset-x-[6%] top-[4%] text-[10cqw] font-medium leading-none text-ff-ink",
+    title:
+      "absolute bottom-[8%] left-1/2 w-[72%] -translate-x-1/2 bg-ff-ink px-[4%] py-[2.5%] text-[3.6cqw] font-medium leading-tight text-ff-gray-2",
+  },
+  farah: {
+    name: "absolute inset-x-[6%] top-[15%] text-[9.5cqw] font-medium leading-none text-ff-ink",
+    title:
+      "absolute right-[6%] top-[31%] whitespace-pre-line text-right text-[3.6cqw] font-medium leading-tight text-ff-ink",
+  },
+};
+const DEFAULT_FACE = {
+  name: "absolute inset-x-[6%] top-[5%] text-[9cqw] font-medium leading-none text-ff-ink",
+  title:
+    "absolute bottom-[7%] left-[6%] bg-ff-ink px-[4%] py-[2%] text-[3.6cqw] font-medium leading-tight text-ff-gray-2",
+};
+
 export default function SpeakerCarousel({
   speakers,
   variant = "light",
@@ -23,8 +48,7 @@ export default function SpeakerCarousel({
   const [hovered, setHovered] = useState<number | null>(null);
   const liRefs = useRef<Array<HTMLLIElement | null>>([]);
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const tag =
-    variant === "dark" ? "bg-ff-ink text-ff-gray-2" : "bg-ff-gray-2 text-ff-ink";
+  const cardBg = variant === "dark" ? "bg-ff-ink" : "bg-ff-gray";
 
   const toggle = (i: number) => {
     const willOpen = open !== i;
@@ -51,6 +75,7 @@ export default function SpeakerCarousel({
         {speakers.map((s, i) => {
           const expanded = open === i;
           const enlarged = expanded || hovered === i;
+          const face = FACE[s.slug] ?? DEFAULT_FACE;
           return (
             <li
               key={`${s.name}-${i}`}
@@ -71,20 +96,21 @@ export default function SpeakerCarousel({
                 aria-label={
                   expanded ? `Close ${s.name} details` : `Open ${s.name} details`
                 }
-                className={`relative aspect-[4/5] shrink-0 cursor-pointer overflow-hidden text-left transition-[width,box-shadow] duration-500 ${EASE} ${
+                className={`@container relative aspect-[4/5] shrink-0 cursor-pointer overflow-hidden text-left transition-[width,box-shadow] duration-500 ${EASE} ${cardBg} ${
                   enlarged ? BIG_W : SMALL_W
                 } ${hovered === i && !expanded ? "shadow-2xl shadow-black/25" : ""}`}
               >
                 <Image
                   src={s.image}
-                  alt={s.name}
+                  alt=""
                   fill
                   sizes="406px"
                   className="object-cover"
                 />
-                <span
-                  className={`pointer-events-none absolute left-3 top-3 px-2 py-1 text-sm font-medium ${tag}`}
-                >
+                <span className={`pointer-events-none ${face.title}`}>
+                  {s.title}
+                </span>
+                <span className={`pointer-events-none ${face.name}`}>
                   {s.name}
                 </span>
 

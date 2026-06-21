@@ -27,7 +27,20 @@ export default function Contact() {
                 <p className="text-sm text-ff-lavender">{col.label}</p>
                 <div className="mt-2 space-y-0.5 text-ff-ink">
                   {col.lines.map((line) => (
-                    <p key={line}>{line}</p>
+                    <p key={line.text}>
+                      {line.href ? (
+                        <a
+                          href={line.href}
+                          target={line.href.startsWith("http") ? "_blank" : undefined}
+                          rel={line.href.startsWith("http") ? "noreferrer" : undefined}
+                          className="underline underline-offset-2 transition-opacity hover:opacity-70"
+                        >
+                          {line.text}
+                        </a>
+                      ) : (
+                        line.text
+                      )}
+                    </p>
                   ))}
                 </div>
               </div>
