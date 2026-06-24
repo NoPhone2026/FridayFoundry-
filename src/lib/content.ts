@@ -36,15 +36,15 @@ export const founders: Founder[] = [
     name: "Ingmar Larsen",
     title: "Founder, ThisAgency",
     role: "Founder",
-    image: "/images/founder-ingmar.jpg",
-    video: founderVideo("ingmar"),
+    image: "/images/founder-ingmar.png",
+    video: { ...founderVideo("ingmar"), poster: "/images/founder-ingmar.png" },
   },
   {
     name: "Marlon Koster",
     title: "Creative Director, Fitzroy",
     role: "Founder",
-    image: "/images/founder-marlon.jpg",
-    video: founderVideo("marlon"),
+    image: "/images/founder-marlon.png",
+    video: { ...founderVideo("marlon"), poster: "/images/founder-marlon.png" },
   },
   {
     name: "Henrique Louzada",
@@ -56,8 +56,8 @@ export const founders: Founder[] = [
     name: "Jonathan van Loon",
     title: "Senior Art Director, APS",
     role: "Board member",
-    image: "/images/founder-jonathan.jpg",
-    video: founderVideo("jonathan"),
+    image: "/images/founder-jonathan.png",
+    video: { ...founderVideo("jonathan"), poster: "/images/founder-jonathan.png" },
   },
 ];
 

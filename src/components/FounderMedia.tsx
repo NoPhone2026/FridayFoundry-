@@ -31,6 +31,8 @@ export default function FounderMedia({
   }, []);
 
   // No video, or the user prefers reduced motion -> static poster/placeholder.
+  // object-contain so a non-matching aspect (e.g. the placeholder board photo)
+  // is shown whole rather than cropped; same-aspect posters fill regardless.
   if (!founder.video || reduce) {
     return (
       <Image
@@ -38,7 +40,7 @@ export default function FounderMedia({
         alt={founder.name}
         fill
         sizes={sizes}
-        className="object-cover"
+        className="object-contain"
       />
     );
   }
@@ -52,7 +54,10 @@ export default function FounderMedia({
       preload="none"
       poster={founder.video.poster}
       aria-label={founder.name}
-      className="absolute inset-0 h-full w-full object-cover"
+      // +1px height (clipped by the parent's overflow-hidden) closes the
+      // subpixel rounding gap that otherwise shows a hairline of the orange
+      // band beneath the figure.
+      className="absolute inset-x-0 top-0 w-full h-[calc(100%+1px)] object-cover"
     >
       <source src={founder.video.webm} type="video/webm" />
       <source src={founder.video.mp4} type="video/mp4" />

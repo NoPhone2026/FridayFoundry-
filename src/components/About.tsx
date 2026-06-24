@@ -37,7 +37,7 @@ export default function About() {
                 </p>
                 <p className="mt-1 text-sm italic opacity-90">{f.title}</p>
               </div>
-              <div className="relative aspect-[3/5] w-full overflow-hidden">
+              <div className="relative aspect-[760/844] w-full overflow-hidden">
                 <FounderMedia
                   founder={f}
                   sizes="(max-width: 768px) 50vw, 25vw"
