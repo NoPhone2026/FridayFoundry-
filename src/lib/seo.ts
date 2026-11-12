@@ -37,7 +37,9 @@ const httpsUrl = (s: string) => `https://${s.replace(/^https?:\/\//, "")}`;
 // as performers and the ticket offer). Consumed by search + AI answer engines.
 export function buildJsonLd() {
   const ev = events[0];
-  const { startDate, endDate } = parseDates(ev.dates);
+  const { startDate, endDate } = ev.start
+    ? { startDate: ev.start, endDate: ev.end }
+    : parseDates(ev.dates);
 
   return {
     "@context": "https://schema.org",
@@ -62,20 +64,24 @@ export function buildJsonLd() {
       },
       {
         "@type": "Event",
-        name: `${SITE_NAME} · Cannes Lions 2026 Edition`,
+        name: ev.fullName ?? `${SITE_NAME} · ${ev.title}`,
         ...(startDate ? { startDate } : {}),
         ...(endDate ? { endDate } : {}),
         eventStatus: "https://schema.org/EventScheduled",
         eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-        location: {
-          "@type": "Place",
-          name: "Cannes",
-          address: {
-            "@type": "PostalAddress",
-            addressLocality: "Cannes",
-            addressCountry: "FR",
-          },
-        },
+        location: ev.venue
+          ? {
+              "@type": "Place",
+              name: ev.venue.name,
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: ev.venue.streetAddress,
+                postalCode: ev.venue.postalCode,
+                addressLocality: ev.venue.city,
+                addressCountry: ev.venue.country,
+              },
+            }
+          : { "@type": "Place", name: ev.location },
         description: inline(ev.description.split(/\n\s*\n/)[0]),
         image: `${SITE_URL}/og.png`,
         organizer: { "@id": `${SITE_URL}/#organization` },
@@ -89,6 +95,9 @@ export function buildJsonLd() {
         offers: {
           "@type": "Offer",
           url: ev.ticketUrl,
+          ...(ev.price
+            ? { price: ev.price.amount.toFixed(2), priceCurrency: ev.price.currency }
+            : {}),
           availability: "https://schema.org/InStock",
           category: "Ticket",
         },

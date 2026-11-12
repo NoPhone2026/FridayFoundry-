@@ -94,41 +94,40 @@ const EVENT_DESCRIPTION =
   "Lorem ipsum dolor sit amet consectetur. Faucibus blandit pharetra nisi suspendisse tellus mauris. Adipiscing mauris quam enim lobortis. Scelerisque risus morbi nullam dictum ut faucibus sit a. Vulputate duis pellentesque at nisl. Lorem ipsum dolor sit amet consectetur. Faucibus blandit pharetra nisi suspendisse tellus mauris. Adipiscing mauris quam enim lobortis. Scelerisque risus morbi nullam dictum ut faucibus sit a. Vulputate duis pellentesque at nisl.";
 
 // Paragraphs separated by a blank line; rendered as separate <p> in EventBlock.
-const CANNES_DESCRIPTION =
-  "We bring together emerging creative talent and some of the industry's most experienced professionals for a morning of honest conversations, fresh perspectives, and meaningful connections.\n\n" +
+const AMSTERDAM_DESCRIPTION =
+  "On November 27th from 15:00–19:00 at Fitzroy in Amsterdam, Friday Foundry brings together emerging creative talent and some of the industry’s most experienced professionals for an afternoon of honest conversations, fresh perspectives, and meaningful connections.\n\n" +
   "Unlike traditional talks or panel discussions, Friday Foundry is built around the questions, challenges, and ambitions of the next generation. We start by listening to emerging creatives and gathering insights on what they want to discuss, learn, and challenge. Based on those insights, we invite industry leaders and give them one simple brief: one hour and complete creative freedom to explore the topic in their own way.\n\n" +
-  "The result is a series of engaging, unfiltered sessions designed to spark dialogue, share real-world lessons, and create genuine exchange between those entering the industry and those helping shape its future.";
+  "The result is a series of engaging, unfiltered sessions designed to spark dialogue, share real-world lessons, and create genuine exchange between those entering the industry and those helping shape its future.\n\n" +
+  "Reserve your seat right here. We’re looking forward to an unforgettable afternoon at Fitzroy :)";
 
 const SPEAKERS: Speaker[] = [
   speaker(
-    "odile",
-    "Odile Breffa",
-    "Strategy Lead at INNOCEAN Berlin",
-    "Odile Breffa is Strategy Lead at INNOCEAN Berlin, combining cultural insight and creativity to drive impactful brand strategies. With a background in sociology, ethnography, PR, and artist management, she brings a distinctly human perspective to innovation.\n\nShe has served as a juror for Cannes Lions and Effie Europe, and as President of the D&AD Orbit Extra Jury. Her award-winning work includes the Grand Prix-winning The First Speech campaign for Reporters Without Borders and the acclaimed Vulva Spaceship campaign, both recognized internationally for their cultural relevance and creative impact.",
-    {
-      website: "innoceanberlin.com",
-      handle: "@innocean_berlin",
-      instagram: "https://www.instagram.com/innocean_berlin",
-    },
+    "emilio",
+    "Emilio de Haan",
+    "Executive Creative Director, Founder of Tranquil",
+    "Emilio is a multiple award-winning Executive Creative Director. Founder of Tranquil creative club and, before that, the rebellious agency HERC. Mexican-Dutch, a connector by nature, working where advertising, brand identity, design and pop culture collide, and co-founder of Plusplusone, which opens doors for underrepresented creatives between 16 and 28.",
   ),
   speaker(
-    "jolyon",
-    "Jolyon White",
-    "Founder and CCO at 10Days London",
-    "Jolyon White is Founder and Chief Creative Officer of 10 Days, one of London's most talked-about independent creative agencies.\n\nPreviously at Wieden+Kennedy, Mother, and Channel 4, he has created memorable award-winning work for brands including Nike, Lurpak, MoneySupermarket, and the Paralympics. Known for challenging industry conventions and championing bold ideas over process, Jolyon brings a unique perspective on creativity, advertising, and the future of the agency model. He is also an award-winning film director.",
-    {
-      website: "www.10days.london",
-      handle: "@10days.london",
-      instagram: "https://www.instagram.com/10days.london/",
-    },
+    "eddy",
+    "Eddy Salfischberger",
+    "Managing Director at Alfred",
+    "Eddy Salfischberger is managing director at Amsterdam based creative agency Alfred, where his main job is making sure the agency is ready today for tomorrow. Since joining in 2016, he has helped Alfred evolve from a predominantly TV-led agency into one that pursues client growth through a broader range of creative ideas and channels.\n\nEddy started his career at Euro RSCG 4D, one of the Netherlands’ first leading digital agencies. His curiosity about technology has stayed with him ever since. Today, he experiments a lot with AI, including a personal advisory board of agents playing the optimist, pessimist, and realist. He believes progress starts with staying curious and being willing to try, fail, ask, and learn.",
   ),
   speaker(
-    "farah",
-    "Farah El Feghali",
-    "Executive Creative Director\nMcCann Paris + La Roche-Posay",
-    "ECD @ McCann Paris, with 14+ years in 35 markets. Trilingual. 2× Cannes GP, creator of #Optink. Miami Ad School + American University of Beirut. Previously @ R/GA New York, BBDO Berlin, Ogilvy Tokyo & BBDO Beirut.",
+    "cindy",
+    "Cindy Fleur",
+    "Founder and Strategy Director at The Business of Culture",
+    "Cindy Fleur is a Dutch brand, culture, and business strategist, as well as the Founder and Strategy Director of the strategy studio The Business of Culture. Driven by the belief that perspective shapes outcomes, she helps organizations reframe complex strategic challenges before moving into execution.\n\nIn addition to leading her studio, Cindy is the Co-Founder and Program Director of The Decision Space and contributes as a trendwatcher and author for the Trendrede, an annual independent forecast on societal and cultural shifts. With an academic background in Communication and Information Sciences from Vrije Universiteit Amsterdam, she has advised a diverse portfolio of clients, including the Rijksmuseum, Rituals, Samsung, and the City of Amsterdam, and frequently shares her insights as a speaker at events like What Design Can Do.",
   ),
 ];
+
+export type Venue = {
+  name: string;
+  streetAddress: string;
+  postalCode: string;
+  city: string;
+  country: string; // ISO 3166-1 alpha-2
+};
 
 export type EventItem = {
   id: string;
@@ -138,18 +137,35 @@ export type EventItem = {
   description: string;
   ticketUrl: string;
   speakers: Speaker[];
+  // Machine-readable details for the structured data in seo.ts
+  fullName?: string;
+  start?: string; // ISO 8601 with UTC offset
+  end?: string;
+  venue?: Venue;
+  price?: { amount: number; currency: string };
 };
 
 export const events: EventItem[] = [
   {
-    id: "cannes-lions",
-    title: "Cannes Lions",
-    dates: "24–26.06.2026",
-    location: "Location",
-    description: CANNES_DESCRIPTION,
+    id: "amsterdam-3rd-edition",
+    title: "Amsterdam",
+    dates: "27.11.2026",
+    location: "Fitzroy",
+    description: AMSTERDAM_DESCRIPTION,
     ticketUrl:
-      "https://www.eventbrite.com/e/friday-foundry-i-cannes-lions-2026-edition-tickets-1988931451512",
+      "https://www.eventbrite.com/e/friday-foundry-i-3rd-edition-tickets-2003428050229",
     speakers: SPEAKERS,
+    fullName: "Friday Foundry · 3rd Edition, Amsterdam",
+    start: "2026-11-27T15:00:00+01:00",
+    end: "2026-11-27T19:00:00+01:00",
+    venue: {
+      name: "Fitzroy",
+      streetAddress: "Prins Hendrikkade 192A",
+      postalCode: "1011 TD",
+      city: "Amsterdam",
+      country: "NL",
+    },
+    price: { amount: 8.7, currency: "EUR" },
   },
   {
     id: "next-event",
@@ -166,6 +182,7 @@ export const events: EventItem[] = [
 export type PreviousEvent = { title: string; date: string };
 
 export const previousEvents: PreviousEvent[] = [
+  { title: "2nd edition @Cannes", date: "24–26.06.2026" },
   { title: "1st edition @cake", date: "07.04.2026" },
 ];
 

@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     "Friday Foundry",
     "creative events",
     "advertising",
-    "Cannes Lions",
+    "Amsterdam",
     "emerging creatives",
     "creative industry",
     "mentorship",

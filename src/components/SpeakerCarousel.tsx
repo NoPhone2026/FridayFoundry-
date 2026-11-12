@@ -14,25 +14,33 @@ const EASE = "ease-[cubic-bezier(0.22,1,0.36,1)]";
 // Geometry lifted from Figma (card ~367×458): all labels are dark ink text on a
 // subtle gray-2 box. The card is a @container, so cqw font sizes + em padding
 // scale everything with the card. Names ≈ 12.15cqw, titles ≈ 4.25cqw.
-const NAME =
-  "absolute whitespace-nowrap bg-ff-gray-2 px-[0.35em] py-[0.18em] text-[12.15cqw] font-medium leading-none text-ff-ink";
+const NAME_BOX =
+  "absolute whitespace-nowrap bg-ff-gray-2 px-[0.35em] py-[0.18em] font-medium leading-none text-ff-ink";
+const NAME = `${NAME_BOX} text-[12.15cqw]`;
 const TITLE =
   "absolute bg-ff-gray-2 px-[0.55em] py-[0.3em] text-[4.25cqw] font-medium leading-[1.12] text-ff-ink";
 
+// Collages reuse three frames; each speaker takes its frame's label layout.
 const FACE: Record<string, { name: string; title: string }> = {
-  odile: {
+  // frame A: title top-left, name under the photo
+  emilio: {
     title: `${TITLE} left-[22.1%] top-[17.7%] max-w-[40%]`,
-    name: `${NAME} bottom-[10.9%] left-[16.6%]`,
+    name: `${NAME} bottom-[10.9%] left-[7%]`,
   },
-  jolyon: {
+  // frame B: name on top, title bottom-right
+  cindy: {
     name: `${NAME} top-[8.7%] left-[13.9%]`,
     title: `${TITLE} bottom-[11.1%] left-[49.9%] max-w-[45%]`,
   },
-  farah: {
-    name: `${NAME} top-[17.7%] left-[5.4%]`,
-    title: `${TITLE} top-[31.2%] left-[33.2%] whitespace-pre-line`,
+  // frame C: name and title in the open band above the photo
+  eddy: {
+    name: `${NAME_BOX} top-[18.5%] left-[5.4%] text-[9.4cqw]`, // long surname
+    title: `${TITLE} top-[31.2%] left-[33.2%] max-w-[60%]`,
   },
 };
+// Bios longer than this drop a size so they still fit the card back.
+const LONG_BIO = 800;
+
 const DEFAULT_FACE = {
   name: `${NAME} bottom-[8%] left-[6%]`,
   title: `${TITLE} left-[6%] top-[7%] max-w-[55%]`,
@@ -131,7 +139,11 @@ export default function SpeakerCarousel({
                       <h4 className="whitespace-pre-line text-[6.43cqw] font-semibold leading-none text-ff-orange">
                         {"About the\nspeaker & session"}
                       </h4>
-                      <p className="whitespace-pre-line text-[3.95cqw] leading-[1.33] text-ff-ink">
+                      <p
+                        className={`whitespace-pre-line leading-[1.33] text-ff-ink ${
+                          s.bio.length > LONG_BIO ? "text-[3.7cqw]" : "text-[3.95cqw]"
+                        }`}
+                      >
                         {s.bio}
                       </p>
                     </div>
